@@ -1,0 +1,16 @@
+name: anapp
+version: 0.1.0
+publish_to: "none"
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.0.0
+  table_calendar: ^3.0.0
+  flutter_local_notifications: ^12.0.0
+
+flutter:
+  uses-material-design: true
