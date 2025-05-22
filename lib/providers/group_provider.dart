@@ -11,6 +11,12 @@ class GroupProvider extends ChangeNotifier {
   List<Group> get groups => List.unmodifiable(_groups);
   DateTime get rotationStart => _rotationStart;
 
+  /// Sets the start date for rotation. Mainly used for testing.
+  void setRotationStart(DateTime date) {
+    _rotationStart = date;
+    notifyListeners();
+  }
+
   void addGroup(Group group) {
     _groups.add(group);
     notifyListeners();
@@ -24,7 +30,8 @@ class GroupProvider extends ChangeNotifier {
   /// Returns the [Group] assigned for the given [date] based on monthly rotation.
   Group? groupForDate(DateTime date) {
     if (_groups.isEmpty) return null;
-    final months = date.difference(_rotationStart).inDays ~/ 30;
+    final months = (date.year - _rotationStart.year) * 12 +
+        (date.month - _rotationStart.month);
     final index = months % _groups.length;
     return _groups[index];
   }

@@ -3,8 +3,15 @@ import 'package:provider/provider.dart';
 import 'providers/group_provider.dart';
 import 'screens/group_admin_screen.dart';
 import 'screens/calendar_screen.dart';
+import 'services/notification_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await NotificationService().init();
+  } catch (e) {
+    debugPrint('Error initializing notifications: $e');
+  }
   runApp(const AnApp());
 }
 
