@@ -1,9 +1,11 @@
-Este es un proyecto de ejemplo en Flutter que muestra la rotación mensual de un calendario para grupos e integrantes. Incluye notificaciones locales para recordar los turnos de trabajo remoto.
+# AnApp
+
+Este es un proyecto de ejemplo en Flutter que muestra la asignación rotativa mensual de grupos para trabajo remoto. La aplicación permite administrar grupos, visualizar el calendario mensual y programar notificaciones recordando cada turno.
 
 ## Requisitos
 
-- Flutter 2.17.0 o superior (pero menor que 3.0.0)
-- Dispositivo o emulador configurado para la ejecución
+- Flutter 2.17.0 o superior (menor que 3.0.0)
+- Dispositivo o emulador configurado
 
 ## Compilación y ejecución
 

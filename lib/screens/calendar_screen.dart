@@ -26,6 +26,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final currentGroup = provider.groupForDate(date);
     Group? selectedGroup = currentGroup;
     final isHoliday = provider.isHoliday(date);
+    final colorScheme = Theme.of(context).colorScheme;
 
     // Calcular la semana anterior
     DateTime weekStart(DateTime d) =>
@@ -48,118 +49,185 @@ class _CalendarScreenState extends State<CalendarScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Opciones para la fecha'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Opciones para ${date.day}/${date.month}/${date.year}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (currentGroup != null) ...[
-                  Text('Grupo asignado: ${currentGroup.name}',
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  if (currentGroup.members.isNotEmpty)
-                    ...currentGroup.members.map((m) => Row(
-                          children: [
-                            const Icon(Icons.person, size: 18),
-                            const SizedBox(width: 4),
-                            Text(m.name),
-                          ],
-                        )),
-                  if (currentGroup.members.isEmpty)
-                    const Text('Sin miembros en este grupo'),
-                  const Divider(),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Grupo asignado: ${currentGroup.name}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (currentGroup.members.isNotEmpty)
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: currentGroup.members
+                                  .map<Widget>((m) => Chip(
+                                        avatar:
+                                            const Icon(Icons.person, size: 16),
+                                        label: Text(m.name),
+                                        backgroundColor:
+                                            colorScheme.surfaceVariant,
+                                      ))
+                                  .toList(),
+                            ),
+                          if (currentGroup.members.isEmpty)
+                            const Text('Sin miembros en este grupo'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
                 if (prevWeekGroups.isNotEmpty) ...[
-                  const Text('Rotación semana anterior:',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  ...prevWeekGroups.map((info) => Padding(
-                        padding: const EdgeInsets.only(bottom: 2),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${[
-                                'Lun',
-                                'Mar',
-                                'Mié',
-                                'Jue',
-                                'Vie'
-                              ][info['date'].weekday - 1]}: ',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Rotación semana anterior:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
-                            Text(info['group'].name),
-                            if (info['group'].members.isNotEmpty) ...[
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Wrap(
-                                  spacing: 4,
-                                  children: info['group']
-                                      .members
-                                      .map<Widget>((m) => Chip(
-                                          label: Text(m.name),
-                                          visualDensity: VisualDensity.compact))
-                                      .toList(),
-                                ),
-                              ),
-                            ]
-                          ],
-                        ),
-                      )),
-                  const Divider(),
-                ],
-                DropdownButton<Group>(
-                  isExpanded: true,
-                  value: selectedGroup,
-                  items: groups
-                      .map((g) => DropdownMenuItem(
-                            value: g,
-                            child: Text(g.name),
-                          ))
-                      .toList(),
-                  onChanged: isHoliday
-                      ? null
-                      : (g) {
-                          setState(() {
-                            selectedGroup = g;
-                          });
-                          Navigator.of(context).pop(g);
-                        },
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  icon: Icon(
-                      isHoliday ? Icons.event_available : Icons.event_busy),
-                  label: Text(
-                      isHoliday ? 'Quitar feriado' : 'Marcar como feriado'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isHoliday ? Colors.green : Colors.orange,
-                  ),
-                  onPressed: () {
-                    if (isHoliday) {
-                      provider.unmarkHoliday(date);
-                    } else {
-                      provider.markHoliday(date);
-                    }
-                    Navigator.of(context).pop();
-                  },
-                ),
-                const SizedBox(height: 16),
-                if (provider.groupForDate(date) != null &&
-                    provider.groupForDate(date) == provider.groupForDate(date))
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.delete),
-                    label: const Text('Quitar asignación manual'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                          ),
+                          const SizedBox(height: 8),
+                          ...prevWeekGroups
+                              .map<Widget>((info) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${[
+                                            'Lun',
+                                            'Mar',
+                                            'Mié',
+                                            'Jue',
+                                            'Vie'
+                                          ][info['date'].weekday - 1]}: ${info['group'].name}',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        if (info['group'].members.isNotEmpty)
+                                          Wrap(
+                                            spacing: 4,
+                                            runSpacing: 4,
+                                            children: info['group']
+                                                .members
+                                                .map<Widget>((m) => Chip(
+                                                      label: Text(m.name),
+                                                      visualDensity:
+                                                          VisualDensity.compact,
+                                                      backgroundColor:
+                                                          colorScheme
+                                                              .surfaceVariant,
+                                                    ))
+                                                .toList(),
+                                          ),
+                                      ],
+                                    ),
+                                  ))
+                              .toList(),
+                        ],
+                      ),
                     ),
-                    onPressed: () {
-                      provider.removeManualAssignment(date);
-                      Navigator.of(context).pop();
-                    },
                   ),
+                  const SizedBox(height: 16),
+                ],
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        DropdownButtonFormField<Group>(
+                          decoration: const InputDecoration(
+                            labelText: 'Seleccionar grupo',
+                            border: OutlineInputBorder(),
+                          ),
+                          value: selectedGroup,
+                          items: groups
+                              .map((g) => DropdownMenuItem(
+                                    value: g,
+                                    child: Text(g.name),
+                                  ))
+                              .toList(),
+                          onChanged: isHoliday
+                              ? null
+                              : (g) {
+                                  setState(() {
+                                    selectedGroup = g;
+                                  });
+                                  Navigator.of(context).pop(g);
+                                },
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          icon: Icon(isHoliday
+                              ? Icons.event_available
+                              : Icons.event_busy),
+                          label: Text(isHoliday
+                              ? 'Quitar feriado'
+                              : 'Marcar como feriado'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                isHoliday ? Colors.green : Colors.orange,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () {
+                            if (isHoliday) {
+                              provider.unmarkHoliday(date);
+                            } else {
+                              provider.markHoliday(date);
+                            }
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        if (provider.groupForDate(date) != null &&
+                            provider.groupForDate(date) ==
+                                provider.groupForDate(date))
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.delete),
+                              label: const Text('Quitar asignación manual'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                              ),
+                              onPressed: () {
+                                provider.removeManualAssignment(date);
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -175,6 +243,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<GroupProvider>(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Calendario de Rotación'),
@@ -186,70 +256,134 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
         ],
       ),
-      body: TableCalendar(
-        firstDay: DateTime.utc(2020, 1, 1),
-        lastDay: DateTime.utc(2030, 12, 31),
-        focusedDay: _focusedDay,
-        selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-        calendarFormat: CalendarFormat.month,
-        onDaySelected: (selectedDay, focusedDay) async {
-          setState(() {
-            _selectedDay = selectedDay;
-            _focusedDay = focusedDay;
-          });
-          await _showAssignGroupDialog(context, selectedDay);
-        },
-        onPageChanged: (focusedDay) {
-          _focusedDay = focusedDay;
-        },
-        calendarBuilders: CalendarBuilders(
-          defaultBuilder: (context, day, focusedDay) {
-            if (provider.isHoliday(day)) {
-              return Center(
-                child: Icon(Icons.beach_access, color: Colors.orange),
-              );
-            }
-            final group = provider.groupForDate(day);
-            if (group == null) return null;
-            return Center(
-              child: Text(
-                group.name,
-                style: TextStyle(
-                  color: isSameDay(day, _selectedDay) ? Colors.white : null,
+      body: Column(
+        children: [
+          Card(
+            margin: const EdgeInsets.all(16),
+            child: TableCalendar(
+              firstDay: DateTime.utc(2020, 1, 1),
+              lastDay: DateTime.utc(2030, 12, 31),
+              focusedDay: _focusedDay,
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+              calendarFormat: CalendarFormat.month,
+              onDaySelected: (selectedDay, focusedDay) async {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+                await _showAssignGroupDialog(context, selectedDay);
+              },
+              onPageChanged: (focusedDay) {
+                _focusedDay = focusedDay;
+              },
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+                titleTextStyle: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            );
-          },
-          selectedBuilder: (context, day, focusedDay) {
-            if (provider.isHoliday(day)) {
-              return Container(
-                margin: const EdgeInsets.all(4.0),
-                decoration: BoxDecoration(
-                  color: Colors.orange,
+              calendarStyle: CalendarStyle(
+                outsideDaysVisible: false,
+                weekendTextStyle: TextStyle(color: colorScheme.error),
+                holidayTextStyle: TextStyle(color: colorScheme.error),
+                todayDecoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
                   shape: BoxShape.circle,
                 ),
-                child: const Center(
-                  child: Icon(Icons.beach_access, color: Colors.white),
-                ),
-              );
-            }
-            final group = provider.groupForDate(day);
-            if (group == null) return null;
-            return Container(
-              margin: const EdgeInsets.all(4.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  group.name,
-                  style: const TextStyle(color: Colors.white),
+                selectedDecoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  shape: BoxShape.circle,
                 ),
               ),
-            );
-          },
-        ),
+              calendarBuilders: CalendarBuilders(
+                defaultBuilder: (context, day, focusedDay) {
+                  if (provider.isHoliday(day)) {
+                    return Center(
+                      child: Icon(
+                        Icons.beach_access,
+                        color: colorScheme.tertiary,
+                        size: 20,
+                      ),
+                    );
+                  }
+                  final group = provider.groupForDate(day);
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${day.day}',
+                        style: TextStyle(
+                          color: isSameDay(day, _selectedDay)
+                              ? colorScheme.onPrimary
+                              : colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      if (group != null)
+                        Text(
+                          group.name,
+                          style: TextStyle(
+                            color: isSameDay(day, _selectedDay)
+                                ? colorScheme.onPrimary
+                                : colorScheme.onSurface.withOpacity(0.7),
+                            fontSize: 10,
+                          ),
+                        ),
+                    ],
+                  );
+                },
+                selectedBuilder: (context, day, focusedDay) {
+                  if (provider.isHoliday(day)) {
+                    return Container(
+                      margin: const EdgeInsets.all(4.0),
+                      decoration: BoxDecoration(
+                        color: colorScheme.tertiary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.beach_access, color: Colors.white),
+                      ),
+                    );
+                  }
+                  final group = provider.groupForDate(day);
+                  return Container(
+                    margin: const EdgeInsets.all(4.0),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${day.day}',
+                            style: TextStyle(
+                              color: colorScheme.onPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          if (group != null)
+                            Text(
+                              group.name,
+                              style: TextStyle(
+                                color: colorScheme.onPrimary.withOpacity(0.9),
+                                fontSize: 10,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
